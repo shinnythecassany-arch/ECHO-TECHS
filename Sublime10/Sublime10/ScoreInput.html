@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <title>Score & GIF Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            text-align: center;
+            padding-top: 50px;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            width: 120px;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+        img {
+            margin-top: 20px;
+            width: 250px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Score Calculator</h1>
+
+    <input type="number" id="scoreInput" placeholder="0 - 100" min="0" max="100">
+    <button onclick="calculateScore()">Submit</button>
+
+    <div id="result"></div>
+
+    <img id="gif" alt="Score Result GIF">
+
+    <script>
+        function calculateScore() {
+            const score = Number(document.getElementById("scoreInput").value);
+            const result = document.getElementById("result");
+            const gif = document.getElementById("gif");
+
+            if (score < 0 || score > 100 || isNaN(score)) {
+                result.textContent = "Please enter a valid score between 0 and 100.";
+                gif.style.display = "none";
+                return;
+            }
+
+            result.textContent = "Your score: " + score;
+
+            if (score < 50) {
+                gif.src = "https://media.giphy.com/media/3og0IPxMM0erATueVW/giphy.gif";
+            } else if (score < 80) {
+                gif.src = "https://media.giphy.com/media/111ebonMs90YLu/giphy.gif";
+            } else {
+                gif.src = "https://media.giphy.com/media/26tOZ42Mg6pbTUPHW/giphy.gif";
+            }
+
+            gif.style.display = "block";
+        }
+    </script>
+
+</body>
+</html>
