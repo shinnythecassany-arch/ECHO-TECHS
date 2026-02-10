@@ -10,15 +10,6 @@ body {
     color: #e5e7eb;
     text-align: center;
     padding-top: 50px;
-    transition: background 0.5s ease; /* For smooth glow transition */
-}
-body.glow {
-    background: radial-gradient(circle, #5B2CA5 0%, #0f172a 70%);
-    animation: pulse 2s infinite; /* Subtle pulsing glow */
-}
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.8; }
 }
 h1 { color: #f9fafb; }
 input[type="number"] {
@@ -49,19 +40,12 @@ button:disabled {
     cursor: not-allowed;
 }
 #result { margin-top: 20px; font-size: 20px; color: #e5e7eb; }
-#specialMsg { 
-    margin-top: 20px; 
-    font-size: 24px; 
-    color: #f9fafb; 
-    font-weight: bold; 
-    display: none; 
-    text-shadow: 0 0 10px #5B2CA5; /* Subtle text glow */
-}
 img {
     margin: 20px auto 0 auto;
     width: 250px;
     display: none;
     border-radius: 10px;
+    transition: box-shadow 0.3s ease, filter 0.3s ease;
 }
 .disclaimer {
     margin-top: 25px;
@@ -75,6 +59,15 @@ img {
 label { cursor: pointer; }
 input[type="checkbox"] { accent-color: #5B2CA5; }
 #errorMsg { color: #ef4444; font-size: 16px; margin-top: 10px; display: none; }
+
+/* PERFECT SCORE GLOW */
+.glow-50 {
+    animation: glowPulse 1.5s infinite alternate;
+}
+@keyframes glowPulse {
+    from { box-shadow: 0 0 10px rgba(34,197,94,0.6); filter: brightness(1); }
+    to { box-shadow: 0 0 35px rgba(34,197,94,1); filter: brightness(1.15); }
+}
 </style>
 </head>
 <body>
@@ -82,17 +75,16 @@ input[type="checkbox"] { accent-color: #5B2CA5; }
 <h1>Predict With Your Score!</h1>
 
 <input type="number" id="scoreInput" placeholder="0 - 50" min="0" max="50">
-<button id="submitBtn" disabled onclick="calculateScore()">Submit</button>
+<button id="submitBtn" disabled>Submit</button>
 
 <div id="result"></div>
-<div id="specialMsg"></div>
 <div id="errorMsg"></div>
 
 <img id="gif" alt="Score Result GIF" onerror="showError()">
 
 <div class="disclaimer">
     <p><strong>Disclaimer:</strong> AI Prediction may not be 100% accurate. This shows possible outcomes.</p>
-    <label><input type="checkbox" id="acceptCheck" onchange="toggleButtons()"> I Accept</label>
+    <label><input type="checkbox" id="acceptCheck"> I Accept</label>
 </div>
 
 <div class="buttons">
@@ -103,67 +95,71 @@ input[type="checkbox"] { accent-color: #5B2CA5; }
 </div>
 
 <script>
-const gif = document.getElementById("gif");
-const errorMsg = document.getElementById("errorMsg");
-const specialMsg = document.getElementById("specialMsg");
-const body = document.body;
-
-// 24 GIFs: 6 score ranges x 4 timeskips
+// GIFs data with full links intact
 const GIFS = {
-    "41-50": {
-        btn1: "GIFS/SAVED_AND_PRESERVED/SAVED_AND_PRESERVED_10_YEARS.webp",
-        btn2: "GIFS/SAVED_AND_PRESERVED/SAVED_AND_PRESERVED_20_YEARS.webp",
-        btn3: "GIFS/SAVED_AND_PRESERVED/SAVED_AND_PRESERVED_30_YEARS.webp",
-        btn4: "GIFS/SAVED_AND_PRESERVED/SAVED_AND_PRESERVED_50_YEARS.webp"
-    },
-    "31-40": {
-        btn1: "GIFS/VERY_HEALTHY/VERY_HEALTHY_10_YEARS.webp",
-        btn2: "GIFS/VERY_HEALTHY/VERY_HEALTHY_20_YEARS.webp",
-        btn3: "GIFS/VERY_HEALTHY/VERY_HEALTHY_30_YEARS.webp",
-        btn4: "GIFS/VERY_HEALTHY/VERY_HEALTHY_50_YEARS.webp"
-    },
-    "21-30": {
-        btn1: "GIFS/HEALTHY/HEALTHY_10_YEARS.webp",
-        btn2: "GIFS/HEALTHY/HEALTHY_20_YEARS.webp",
-        btn3: "GIFS/HEALTHY/HEALTHY_30_YEARS.webp",
-        btn4: "GIFS/HEALTHY/HEALTHY_50_YEARS.webp"
-    },
-    "10-20": {
-        btn1: "GIFS/SURVIVING/SURVIVING_10_YEARS.webp",
-        btn2: "GIFS/SURVIVING/SURVIVING_20_YEARS.webp",
-        btn3: "GIFS/SURVIVING/SURVIVING_30_YEARS.webp",
-        btn4: "GIFS/SURVIVING/SURVIVING_50_YEARS.webp"
-    },
-    "1-9": {
-        btn1: "GIFS/DAMAGED/DAMAGED_10_YEARS.webp",
-        btn2: "GIFS/DAMAGED/DAMAGED_20_YEARS.webp",
-        btn3: "GIFS/DAMAGED/DAMAGED_30_YEARS.webp",
-        btn4: "GIFS/DAMAGED/DAMAGED_50_YEARS.webp"
-    },
-    "0": {
-        btn1: "GIFS/CRITICALLY_DAMAGED/CRITICALLY_DAMAGED_10_YEARS.webp",
-        btn2: "GIFS/CRITICALLY_DAMAGED/CRITICALLY_DAMAGED_20_YEARS.webp",
-        btn3: "GIFS/CRITICALLY_DAMAGED/CRITICALLY_DAMAGED_30_YEARS.webp",
-        btn4: "GIFS/CRITICALLY_DAMAGED/CRITICALLY_DAMAGED_50_YEARS.webp"
-    }
+  "41-50": {
+    btn1: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679557605425196/SAVED_AND_PRESERVED_10_YEARS.webp?ex=698c2c92&is=698adb12&hm=a4c4d63f1428c8f7c372d3c0bee6b2efeaaff9c2bdd3ce4d2af04b0944f33f20&",
+    btn2: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679556594597950/SAVED_AND_PRESERVED_20_YEARS.webp?ex=698c2c92&is=698adb12&hm=e799a69f01d5858be13cb9a9f19a443abb58f36892185d61249e484eb1a86966&",
+    btn3: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679556942856332/SAVED_AND_PRESERVED_30_years.webp?ex=698c2c92&is=698adb12&hm=723a2cfc7448d47b5e6742f9d5722be34ea2ac07ba2746d8fd375ff535414b11&",
+    btn4: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679557286920274/SAVED_AND_PRESERVED_50_years.webp?ex=698c2c92&is=698adb12&hm=2bcff4059161890757d502544f8bfdf64a96dcc4409aa65831818c5cf7e6b649&"
+  },
+  "31-40": {
+    btn1: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679493273325710/VERY_HEALTHY_10_YEARS.webp?ex=698c2c83&is=698adb03&hm=d4217a6dac339835288b8bb47a11045e7f7487114eb8ff7d6c32c119d492918f&",
+    btn2: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679493885825087/VERY_HEALTHY_20_years.webp?ex=698c2c83&is=698adb03&hm=23ec54299d17923e0cda8b44804fa07569cb68ae27f29a02103f39537cde605f&",
+    btn3: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679494812766218/VERY_HEALTHY_30_years.webp?ex=698c2c83&is=698adb03&hm=5de024bd95cf9204af536e13cb4239003706d3bd13e5efd10245b9b9ecdd480b&",
+    btn4: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679494384816371/VERY_HEALTHY_50_years.webp?ex=698c2c83&is=698adb03&hm=97b254631d6a3183b725c3e3dd72159bb07674ae477c12e760242923edad2324&"
+  },
+  "21-30": {
+    btn1: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679431042564217/HEALTHY_10_YEARS.webp?ex=698c2c74&is=698adaf4&hm=da391c9a3f1157c23977027c4d96cc34e4ff42d2a6a7b889e0860e3acc253f5c&",
+    btn2: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679431520456704/HEALTHY_20_years.webp?ex=698c2c74&is=698adaf4&hm=19ce2f1f34cf40a20bc89732557202e077752531eb3a2edf3b9a6d8b63b8b279&",
+    btn3: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679430065291376/HEALTHY_30_years.webp?ex=698c2c74&is=698adaf4&hm=35d08a6ef297ae10184c4c571376daa3ce016701312c50e296b6336cb2e23ed1&",
+    btn4: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679430635458631/HEALTHY_50_years.webp?ex=698c2c74&is=698adaf4&hm=0b09ac5e794d573b2d66f55298fad4d429adbc4da26c22f6ca63e76d49fe0161&"
+  },
+  "10-20": {
+    btn1: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679231259476073/SURVIVING_10_years.webp?ex=698c2c44&is=698adac4&hm=5a9c6631a4d5ac90a109626a82b4557165ed3b688216620eef3391a15c7e6bd8&",
+    btn2: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679231749951488/SURVIVING_20_years.webp?ex=698c2c44&is=698adac4&hm=53ae143e5a38d8024e93245d5f1d192cba9e168e4f8dea0fce92559288b7bb92&",
+    btn3: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679230345117736/SURVIVING_30_years.webp?ex=698c2c44&is=698adac4&hm=9606afcdd1e49cb07998ec6d87d7059851acba37224b0a959c6438d3a3833fc3&",
+    btn4: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679230881992856/SURVIVING_50_years.webp?ex=698c2c44&is=698adac4&hm=74281b93468e83ad9618d44168898d13ab9d3bbc3ea80f9ea1116fe1486ea36d&"
+  },
+  "1-9": {
+    btn1: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679110459195413/DAMAGED_10_YEARS.webp?ex=698c2c27&is=698adaa7&hm=74b61f26b3fb1039e94bbfbbd06f4abad26337ce471ab3fd7783e440cf3d3afc&",
+    btn2: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679110891077794/DAMAGED_20_YEARS.webp?ex=698c2c27&is=698adaa7&hm=0374b0e56b0793cc77b265b02fbf9b4d4334814c7f3af8384f32637523880afb&",
+    btn3: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679111436341330/DAMAGED_30_YEARS.webp?ex=698c2c28&is=698adaa8&hm=fa83a36b7a73367dc58d79bd7ce461a1d479580ba5441bdb2848ec97ceb9e113&",
+    btn4: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679111998374101/DAMAGED_50_years.webp?ex=698c2c28&is=698adaa8&hm=a9c3fca8bfc91101895f776de66679cd2b9ece3d8340498110d2bdfa8c729c10&"
+  },
+  "0": {
+    btn1: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679092457115682/CRITICALLY_DAMAGED_10_years.webp?ex=698c2c23&is=698adaa3&hm=f157248b8c3d50f53e50ea68364772821b625735f6282446b72539fe36616d0e&",
+    btn2: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679091047829556/CRITICALLY_DAMAGED_20_years.webp?ex=698c2c23&is=698adaa3&hm=a01d1b740881f5861022589d0a1f2e8ab4ca36e88af7d3791b0692989040235f&",
+    btn3: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679091400409128/CRITICALLY_DAMAGED_30_years.webp?ex=698c2c23&is=698adaa3&hm=a8799980cc395a905f99854e80edb8740d1b919b1aac3ad3686014d090546d90&",
+    btn4: "https://cdn.discordapp.com/attachments/1183313996300947486/1470679092004393010/CRITICALLY_DAMAGED_50_years.webp?ex=698c2c23&is=698adaa3&hm=2f4afabd1533ea139c77ee0e1958f648460aabc6f7095296afdf37f649f04138&"
+  }
 };
 
 let currentRange = "";
+let currentScore = 0;
 
-function calculateScore() {
-    const scoreInput = document.getElementById("scoreInput");
+const scoreInput = document.getElementById("scoreInput");
+const submitBtn = document.getElementById("submitBtn");
+const acceptCheck = document.getElementById("acceptCheck");
+const gif = document.getElementById("gif");
+const result = document.getElementById("result");
+
+// Enable buttons when accepted
+acceptCheck.addEventListener("change", () => {
+    submitBtn.disabled = !acceptCheck.checked;
+    for (let i = 1; i <=4; i++) document.getElementById("btn"+i).disabled = !acceptCheck.checked;
+});
+
+// Submit score
+submitBtn.addEventListener("click", () => {
     const score = Number(scoreInput.value.trim());
-    const result = document.getElementById("result");
-
-    // Hide previous elements
-    errorMsg.style.display = "none";
+    currentScore = score;
+    gif.classList.remove("glow-50");
     gif.style.display = "none";
-    specialMsg.style.display = "none";
-    body.classList.remove("glow");
+    result.textContent = "";
 
-    if (scoreInput.value.trim() === "" || score < 0 || score > 50 || isNaN(score)) {
+    if (isNaN(score) || score <0 || score>50) {
         result.textContent = "Please enter a valid score between 0 and 50.";
-        currentRange = "";
         return;
     }
 
@@ -174,48 +170,28 @@ function calculateScore() {
     else if (score >= 1) currentRange = "1-9";
     else currentRange = "0";
 
-    // Special case for score 50
-    if (score === 50) {
-        result.textContent = ""; // Clear default result
-        specialMsg.textContent = "It's saved and preserved for another thousand years!";
-        specialMsg.style.display = "block";
-        body.classList.add("glow");
-        // Remove glow after 5 seconds for a timed effect
-        setTimeout(() => {
-            body.classList.remove("glow");
-        }, 5000);
-        return; // Skip normal image display
-    }
-
     result.textContent = "Your score: " + score;
-    gif.src = GIFS[currentRange]["btn1"];
-    console.log("Loading image:", gif.src);
+    gif.src = GIFS[currentRange].btn1;
     gif.style.display = "block";
-}
 
-function toggleButtons() {
-    const accepted = document.getElementById("acceptCheck").checked;
-    document.getElementById("submitBtn").disabled = !accepted;
-    for (let i = 1; i <= 4; i++) {
-        document.getElementById("btn" + i).disabled = !accepted;
-    }
-}
+    if (score===50) { void gif.offsetWidth; gif.classList.add("glow-50"); }
+});
 
-function showError() {
-    errorMsg.textContent = "Failed to load image. Check file paths or try refreshing.";
-    errorMsg.style.display = "block";
-    gif.style.display = "none";
-}
-
-for (let i = 1; i <= 4; i++) {
-    document.getElementById("btn" + i).addEventListener("click", () => {
+// Buttons for timeskips
+for (let i=1;i<=4;i++){
+    document.getElementById("btn"+i).addEventListener("click", ()=>{
         if (!currentRange) return;
-        gif.src = GIFS[currentRange]["btn" + i];
-        console.log("Switching to:", gif.src);
-        gif.style.display = "block";
+        gif.src = GIFS[currentRange]["btn"+i];
+        gif.style.display="block";
+        gif.classList.remove("glow-50");
+        if (currentScore===50){ void gif.offsetWidth; gif.classList.add("glow-50"); }
     });
 }
-</script>
 
+function showError(){
+    document.getElementById("errorMsg").textContent = "Failed to load image. Check file paths.";
+    gif.style.display="none";
+}
+</script>
 </body>
 </html>
