@@ -24,6 +24,53 @@
             padding-top: 18rem;
             padding-bottom: 15rem;
         }
+
+        /* ==================================================
+   FORCE FOOTER FULL WIDTH (MATCH INDEX.HTML)
+   ================================================== */
+
+footer {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    padding: 0;
+    background: #020617;
+    position: relative;
+}
+
+/* Kill Sublime grid limits inside footer */
+footer .row {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+}
+
+footer .col-full {
+    width: 100%;
+    max-width: none;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+}
+
+/* Center text cleanly */
+.ss-copyright span {
+    display: block;
+    text-align: center;
+}
+
+/* Back to top button safety */
+.ss-go-top {
+    right: 2rem;
+}
+
+/* Mobile polish */
+@media (max-width: 768px) {
+    footer {
+        padding-bottom: 3rem;
+    }
+}
+
     </style>
 
     <!-- script
@@ -297,48 +344,11 @@
 
     <!-- footer
     ================================================== -->
-/* ==================================================
-   FULL-WIDTH FOOTER FIX
-   ================================================== */
-
-footer {
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    position: relative;
-    left: 0;
-    right: 0;
-    background: #020617; /* dark background so it feels grounded */
-}
-
-footer .row {
-    width: 100%;
-    max-width: none;
-    margin: 0;
-}
-
-footer .col-full {
-    width: 100%;
-    max-width: none;
-    margin: 0 auto;
-    padding: 2.5rem 1.5rem;
-    text-align: center;
-}
-
-/* Make sure copyright text centers properly */
-.ss-copyright span {
-    display: block;
-    text-align: center;
-}
-
-/* Mobile polish */
-@media (max-width: 768px) {
-    footer {
-        padding-bottom: 3rem;
-    }
-}
-
-
+ <footer> <div class="row"> <div class="col-full ss-copyright"> 
+     <span>© Copyright Sublime 2018</span> 
+     <span>Design by <a href="https://www.facebook.com/kriltam.delacruz/">Kril Tam Dela Cruz</a>
+     </span>
+ </div> </div> <div class="ss-go-top"> <a class="smoothscroll" title="Back to Top" href="#top">Back to Top</a> </div> </footer>
     <!-- photoswipe background
     ================================================== -->
     <div aria-hidden="true" class="pswp" role="dialog" tabindex="-1">
@@ -387,6 +397,7 @@ footer .col-full {
 
 
 </body>
+
 
 
 
